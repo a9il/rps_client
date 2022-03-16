@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ColeyseusSettings
   m_EditorClassIdentifier: 
   colyseusServerAddress: pggnvb.colyseus.in
-  colyseusServerPort: 2567
-  useSecureProtocol: 0
+  colyseusServerPort: 443
+  useSecureProtocol: 1
   _requestHeaders: []

@@ -1,4 +1,5 @@
 
+using Colyseus.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ using UnityEngine.UI;
 
 public class CanvasManager : MonoBehaviour
 {
+    //pggnvb.colyseus.in
     [SerializeField]
     private Button[] handBtns;
     [SerializeField]
@@ -29,6 +31,22 @@ public class CanvasManager : MonoBehaviour
     [SerializeField]
     private StatInfo opponetStatInfo;
     private Action<HandType> _onHandSelected;
+    [SerializeField]
+    private Button startGameBtn;
+    [SerializeField]
+    private Button leaderboardBtn;
+    [SerializeField]
+    private Button changeNameBtn;
+    private Action _onGameStarted;
+    [SerializeField]
+    private GameObject mainMenuContainer;
+    [SerializeField]
+    private Leaderboard leaderboard;
+    [SerializeField]
+    private GameObject gameContainer;
+    [SerializeField]
+    private NameInputReceiver inputName;
+    private string playerName;
     public void SetPlayerHandSelectedCallback(Action<HandType> callback) 
     {
         _onHandSelected = callback;
@@ -36,6 +54,11 @@ public class CanvasManager : MonoBehaviour
 
     void Start()
     {
+        startGameBtn.onClick.AddListener(StartGameClicked);
+        leaderboardBtn.onClick.AddListener(LeaderboardBtnClicked);
+        changeNameBtn.onClick.AddListener(ChangeNameClicked);
+        inputName.SetOnCloseCallback(OnChangedNameClosed);
+        leaderboard.SetOnCloseCallback(OnLeaderBoardClosed);
         for (int i = 0; i < handBtns.Length; i++)
         {
             int localI = i;
@@ -160,5 +183,98 @@ public class CanvasManager : MonoBehaviour
             }
         }
         return -1;
-    }    
+    }
+    
+    void StartGameClicked()
+    {
+        if(_onGameStarted!=null)
+        {
+            _onGameStarted();
+        }
+        GoToGame();
+    }
+
+    void LeaderboardBtnClicked()
+    {
+        GoToLeaderboard();
+    }
+
+    void ChangeNameClicked()
+    {
+        GoToChangeName();
+    }
+
+    public void GoToChangeName()
+    {
+        gameContainer.SetActive(false);
+        mainMenuContainer.SetActive(false);
+        leaderboard.gameObject.SetActive(false);
+        inputName.gameObject.SetActive(true);
+    }
+
+    public void GoToLeaderboard()
+    {
+        gameContainer.SetActive(false);
+        mainMenuContainer.SetActive(false);
+        leaderboard.gameObject.SetActive(true);
+        inputName.gameObject.SetActive(false);
+    }
+
+    void GoToGame()
+    {
+        gameContainer.SetActive(true);
+        mainMenuContainer.SetActive(false);
+        leaderboard.gameObject.SetActive(false);
+        inputName.gameObject.SetActive(false);
+    }
+
+    public void GoToMainMenu()
+    {
+        gameContainer.SetActive(false);
+        mainMenuContainer.SetActive(true);
+        leaderboard.gameObject.SetActive(false);
+        inputName.gameObject.SetActive(false);
+    }
+
+    void OnChangedNameClosed()
+    {
+        GoToMainMenu();
+    }
+
+    void OnLeaderBoardClosed()
+    {
+        GoToMainMenu();
+    }
+
+    public void SetOnGameStartedCallback(Action callback)
+    {
+        _onGameStarted = callback;
+    }
+    public void DisplayOfflineLeaderboard(int[] playerAndOpponentScore)
+    {
+        leaderboard.DisplayOfflineLeaderboard(playerAndOpponentScore, playerName);
+        GoToLeaderboard();
+    }
+
+    public void DisplayOnlineLeaderboard(object  data)
+    {
+        leaderboard.DisplayLeaderboard(data);
+    }
+
+    public int[] GetPlayerAndOpponentScore()
+    {
+        int[] scores = new int[2];
+        scores[0] = playerStatData.GetTotalScore();
+        scores[1] = opponentStatData.GetTotalScore();
+        return scores;
+    }
+
+    public void ResetScore()
+    {
+        playerStatData.ResetScore();
+        opponentStatData.ResetScore();
+        UpdateStatInfo();
+    }
+
+    
 }
