@@ -6,8 +6,9 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class CanvasManager : MonoBehaviour
+public class CanvasManager : MonoBehaviour, IPointerClickHandler
 {
     //pggnvb.colyseus.in
     [SerializeField]
@@ -34,7 +35,7 @@ public class CanvasManager : MonoBehaviour
     [SerializeField]
     private Button startGameBtn;
     [SerializeField]
-    private Button leaderboardBtn;
+    private ButtonParticle leaderboardBtn;
     [SerializeField]
     private Button changeNameBtn;
     private Action _onGameStarted;
@@ -46,6 +47,8 @@ public class CanvasManager : MonoBehaviour
     private GameObject gameContainer;
     [SerializeField]
     private NameInputReceiver inputName;
+    [SerializeField]
+    private RectTransform clickReceiverRectTransform;
     private string playerName;
     public void SetPlayerHandSelectedCallback(Action<HandType> callback) 
     {
@@ -54,6 +57,7 @@ public class CanvasManager : MonoBehaviour
 
     void Start()
     {
+        leaderboardBtn.rt = clickReceiverRectTransform;
         startGameBtn.onClick.AddListener(StartGameClicked);
         leaderboardBtn.onClick.AddListener(LeaderboardBtnClicked);
         changeNameBtn.onClick.AddListener(ChangeNameClicked);
@@ -187,7 +191,7 @@ public class CanvasManager : MonoBehaviour
     
     void StartGameClicked()
     {
-        if(_onGameStarted!=null)
+        if (_onGameStarted!=null)
         {
             _onGameStarted();
         }
@@ -275,6 +279,12 @@ public class CanvasManager : MonoBehaviour
         opponentStatData.ResetScore();
         UpdateStatInfo();
     }
-
-    
+    private Vector2 localPos;
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(clickReceiverRectTransform, 
+            eventData.position, Camera.main, out localPos);
+        ParticleController.Instance.Play(localPos);
+        Debug.Log("Screen Point: " + localPos);
+    }
 }
